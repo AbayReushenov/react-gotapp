@@ -1,12 +1,38 @@
-import React from 'react';
+import React, {Component} from 'react';
 import {Col, Row, Container} from 'reactstrap';
 import Header from '../header';
 import RandomChar from '../randomChar';
-import ItemList from '../itemList';
-import CharDetails from '../charDetails';
+import CharacterPage from '../characterPage'
+import { Button } from 'reactstrap';
+import ErrorMessage from '../errorMessage'
 
 
-const App = () => {
+export default class App extends Component {
+    state = {
+        hide: true,
+        error: false
+        }
+    
+    componentDidCatch(){
+        console.log('errpr')
+        this.setState({error: true})
+    }
+    
+        
+    hideMe(){
+        this.setState({
+            hide:!this.state.hide
+        })
+    }
+
+
+
+    render(){
+
+        if (this.state.error) {
+            return <ErrorMessage/>
+        }
+        
     return (
         <> 
             <Container>
@@ -15,20 +41,17 @@ const App = () => {
             <Container>
                 <Row>
                     <Col lg={{size: 5, offset: 0}}>
-                        <RandomChar/>
+                        <> 
+                        { this.state.hide ? (<RandomChar/>) : null }
+                        <Button color="danger" onClick={()=> this.hideMe()}>Hide or show random Character?</Button>
+                        </>
                     </Col>
                 </Row>
-                <Row>
-                    <Col md='6'>
-                        <ItemList />
-                    </Col>
-                    <Col md='6'>
-                        <CharDetails />
-                    </Col>
-                </Row>
+                    <CharacterPage/>
+                    <CharacterPage/>
+                    <CharacterPage/>
             </Container>
         </>
-    );
-};
-
-export default App;
+    )
+   }
+}
