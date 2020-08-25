@@ -1,79 +1,90 @@
-// export default 
-export default class GotService {
-    constructor(){
-        this._apiBase = "https://www.anapioficeandfire.com/api/"
-        this.base = [
-            {key: 0, url: 'characters/', page: '?page=5&pageSize=10', id : 130},
-            {key: 1, url: 'books/', page: '', id: 1},
-            {key: 2, url: 'houses/', page: '', id: 1}
-            ]  
+export default class gotService {
+    constructor() {
+        this._apiBase = 'https://www.anapioficeandfire.com/api';
     }
 
-    link = (urlApi, url, pageOrId) => `${urlApi}${url}${pageOrId}`
+    getResource = async (url) => {
+        const res = await fetch(`${this._apiBase}${url}`);
     
-    getServer = async url => {
-        const responceFetch = await fetch(url)
-
-        if (!responceFetch.ok) {
-          throw new Error (`Sorry you have  code of error on url: ${url}, status : ${responceFetch.status}`)
+        if (!res.ok) {
+          throw new Error(`Could not fetch ${url}` +
+            `, received ${res.status}`);
         }
-
-        return await responceFetch.json()
+        return await res.json();
     }
 
-    getDataPage5 = index  => this.getServer(this.link(this._apiBase, this.base[index].url, this.base[index].page))
-       
-    getElement = async (index, newid) => {
-         const responce = await this.getServer(this.link(this._apiBase, this.base[index].url, newid))
-         return this._transformItem(responce)
-     }
-      
-    // getDataName = index => {
-    //     this.getServer(this.link(this._apiBase, this.base[index].url, this.base[index].page))
-    //     .then(data => data.forEach(arr => console.log(`Name: ${arr.name}`)))  
-    //     }
+    getAllBooks = async () => {
+        const res = await this.getResource(`/books/`);
+        return res.map(this._transformBook);
+    }
+    
+    getBook = async (id) => {
+        const book = await this.getResource(`/books/${id}/`);
+        return this._transformBook(book);
+    }
+    
+    getAllCharacters = async () => {
+        const res = await this.getResource(`/characters?page=5&pageSize=10`);
+        return res.map(this._transformCharacter);
+    }
+    
+    getCharacter = async (id) => {
+        const character = await this.getResource(`/characters/${id}`);
+        return this._transformCharacter(character);
+    }
+    
+    getAllHouses = async () => {
+        const res = await this.getResource(`/houses/`);
+        return res.map(this._transformHouse);
+    }
+    
+    getHouse = async (id) => {
+        const house = await this.getResource(`/houses/${id}/`);
+        return this._transformHouse(house);
+    }
 
-    // getElementName = index => {
-    //     this.getServer(this.link(this._apiBase, this.base[index].url, this.base[index].id))
-    //     .then(data => console.log(`Name: ${data.name}`))   
-    //     }
+    isSet(data) {
+        if (data) {
+            return data
+        } else {
+            return 'no data :('
+        }
+    }
 
-    _transformItem = data => {
+    _extractId = (item) => {
+        const idRegExp = /\/([0-9]*)$/;
+        return item.url.match(idRegExp)[1];
+    }
+
+    _transformCharacter = (char) => {
         return {
-            name: data.name,
-            gender: data.gender,
-            born: data.born,
-            died: data.died,
-            culture: data.culture,
-            x: data.x
-            }
+            id: this._extractId(char),
+            name: this.isSet(char.name),
+            gender: this.isSet(char.gender),
+            born: this.isSet(char.born),
+            died: this.isSet(char.died), 
+            culture: this.isSet(char.culture)
+        };
     }
 
-
+    _transformHouse = (house) => {
+        return {
+            id: this._extractId(house),
+            name: this.isSet(house.name),
+            region: this.isSet(house.region),
+            words: this.isSet(house.words),
+            titles: this.isSet(house.titles),
+            ancestralWeapons: this.isSet(house.ancestralWeapons)
+        };
+    }
+    
+    _transformBook = (book) => {
+        return {
+            id: this._extractId(book),
+            name: this.isSet(book.name),
+            numberOfPages: this.isSet(book.numberOfPages),
+            publisher: this.isSet(book.publisher),
+            released: this.isSet(book.released)
+        };
+    }
 }
-
-
-
-
-
-
-// test
-
-// const newGame = new GotService()
-
-// newGame.getData(0)
-
-// newGame.getData(1)
-// newGame.getData(2)
-
-// newGame.getElement(0)
-// newGame.getElement(1)
-// newGame.getElement(2)
-
-// newGame.getDataName(0)
-// newGame.getDataName(1)
-// newGame.getDataName(2)
-
-// newGame.getElementName(0)
-// newGame.getElementName(1)
-// newGame.getElementName(2)
